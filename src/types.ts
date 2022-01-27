@@ -1,17 +1,44 @@
 export type PluginOptions = {
-  outputFolder: string
-  createLinkInHead: boolean
-  entryLimitPerFile: number
+  //Base Params
   query: string
-  excludes: string[]
-  resolveSiteUrl: (data: any) => string
-  resolvePagePath: (data: any) => string
-  resolvePages: (data: any) => any[]
-  filterPages: (page: Page, excludedRoute: string, tools: any) => boolean
-  serialize: (
-    pages: Page[],
-    tools: any
-  ) => { url: string; changefreq: string; priority: number }
+  sitemapRoot: SiteMap
+
+  outputFolder: string
+  entryLimitPerFile: number
+  createLinkInHead: boolean
 }
 
-type Page = { path: string; [key: string]: any }
+export type SiteMap = {
+  //Base options
+  fileName: string
+  outputFolder?: string
+
+  //Tree
+  children?: SiteMap[]
+
+  //Datas
+  queryName: string
+  excludes?: (RegExp | string)[]
+  filterPages?: FilteringFunction
+  serialize: SerializationFunction
+
+  //Advanced options
+  xmlAnchorAttributes?: string
+  urlsetAnchorAttributes?: string
+}
+
+export type FilteringFunction = (page: any) => boolean
+
+export type SerializationFunction = (page: any) => SiteMapNode
+
+export type SiteMapNode = {
+  loc: string
+  changefreq?: string
+  priority?: string
+  lastmod?: string | Date
+  [key: string]: string | SiteMapSubNode | Date | undefined
+}
+
+export type SiteMapSubNode = {
+  [key: string]: string | SiteMapSubNode
+}
