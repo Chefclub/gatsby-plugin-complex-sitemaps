@@ -1,34 +1,30 @@
 module.exports = {
-  root: true,
+  // Specifies the ESLint parser for TypeScript
+  parser: "@typescript-eslint/parser",
+  extends: [
+    "plugin:@typescript-eslint/recommended",
+    "prettier/@typescript-eslint",
+    "plugin:prettier/recommended",
+  ],
   env: {
-    browser: true,
+    node: true,
     es6: true,
   },
-  parser: "@typescript-eslint/parser",
-  extends: ["plugin:@typescript-eslint/recommended", "prettier"],
-  globals: {
-    Atomics: "readonly",
-    SharedArrayBuffer: "readonly",
-  },
+  plugins: ["@typescript-eslint", "prettier"],
   parserOptions: {
     ecmaFeatures: {
       jsx: true,
     },
+    // Allows for the parsing of modern ECMAScript features
     ecmaVersion: 2018,
+    // Allows for the use of imports
     sourceType: "module",
   },
-  plugins: ["@typescript-eslint", "prettier"],
   rules: {
-    "@typescript-eslint/explicit-module-boundary-types": "off",
-    "@typescript-eslint/no-unused-vars": [
-      "warn",
-      { argsIgnorePattern: "^_", ignoreRestSiblings: true },
-    ],
-    "@typescript-eslint/no-use-before-define": "off",
+    "prettier/prettier": "error",
+    // allow "any" as type
     "@typescript-eslint/no-explicit-any": "off",
-    "@typescript-eslint/explicit-function-return-type": "off",
-    "@typescript-eslint/no-non-null-assertion": "off",
-    "prettier/prettier": "warn",
-    "prefer-const": "warn",
+    // allow not defining the return type of exported functions
+    "@typescript-eslint/explicit-module-boundary-types": "off",
   },
 }

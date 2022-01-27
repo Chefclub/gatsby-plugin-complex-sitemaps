@@ -1,19 +1,15 @@
-//import { CreatePagesArgs } from "gatsby"
+import { BuildArgs } from "gatsby"
+import { PluginOptions } from "./types"
+import { pluginOptionsSchema } from "./options-validation"
 
-type PluginOptions = {
-  test: string
-}
+exports.pluginOptionsSchema = pluginOptionsSchema
 
 exports.onPostBuild = async (
-  //{ graphql, pathPrefix }: CreatePagesArgs,
+  { graphql, pathPrefix }: BuildArgs,
   pluginOptions: PluginOptions
 ) => {
   //Reformat options and behavior
   console.log("pluginOptions", pluginOptions)
-
-  for (let i = 0; i < 50; i++) {
-    console.log("coucou")
-  }
 
   //Run queries
 
