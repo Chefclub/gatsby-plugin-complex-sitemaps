@@ -1,17 +1,29 @@
 import { BuildArgs } from "gatsby"
 import { PluginOptions } from "./types"
 import { pluginOptionsSchema } from "./options-validation"
+import { oneLine } from "common-tags"
 
-exports.pluginOptionsSchema = pluginOptionsSchema
+const SITE_INFO_QUERY = `
+  site {
+    siteMetadata {
+      siteUrl
+    }
+  }
+`
 
 exports.onPostBuild = async (
   { graphql, pathPrefix }: BuildArgs,
   pluginOptions: PluginOptions
 ) => {
+  console.log("pathPrefix : ", pathPrefix)
+
   //Reformat options and behavior
-  console.log("pluginOptions", pluginOptions)
+  const completedQuery = oneLine`{${SITE_INFO_QUERY}${pluginOptions.query}}`
+  console.log("completedQuery : ", completedQuery)
 
   //Run queries
+  const queryData = await graphql(completedQuery)
+  console.log("queryData : ", JSON.stringify(queryData))
 
   //Format Queries data
 
@@ -21,3 +33,5 @@ exports.onPostBuild = async (
 
   return
 }
+
+exports.pluginOptionsSchema = pluginOptionsSchema
