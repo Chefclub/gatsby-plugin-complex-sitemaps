@@ -1,26 +1,29 @@
 export type PluginOptions = {
   //Base Params
   query: string
-  sitemapRoot: SiteMap
+  sitemapTree: Sitemap
 
   outputFolder: string
+  outputFolderURL?: string
   entryLimitPerFile: number
   createLinkInHead: boolean
+  additionalSitemapsPath: string[]
 }
 
-export type SiteMap = {
+export type Sitemap = {
   //Base options
   fileName: string
   outputFolder?: string
+  lastmod?: string | Date
 
   //Tree
-  children?: SiteMap[]
+  children?: Sitemap[]
 
   //Datas
-  queryName: string
+  queryName?: string
   excludes?: (RegExp | string)[]
   filterPages?: FilteringFunction
-  serialize: SerializationFunction
+  serializer?: SerializationFunction
 
   //Advanced options
   xmlAnchorAttributes?: string
@@ -29,16 +32,24 @@ export type SiteMap = {
 
 export type FilteringFunction = (page: any) => boolean
 
-export type SerializationFunction = (page: any) => SiteMapNode
+export type SerializationFunction = (page: any) => SitemapNode
 
-export type SiteMapNode = {
+export type SitemapNode = {
   loc: string
   changefreq?: string
   priority?: string
   lastmod?: string | Date
-  [key: string]: string | SiteMapSubNode | Date | undefined
+  [key: string]: string | SitemapSubNode | Date | undefined
 }
 
-export type SiteMapSubNode = {
-  [key: string]: string | SiteMapSubNode
+export type SitemapSubNode = {
+  [key: string]: string | SitemapSubNode
+}
+
+export type SiteInfo = {
+  site: {
+    siteMetadata: {
+      siteUrl: string
+    }
+  }
 }

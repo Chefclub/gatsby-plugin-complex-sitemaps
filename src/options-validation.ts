@@ -1,6 +1,6 @@
 import { parse as parseGraphql } from "gatsby/graphql"
 import { stripIndent } from "common-tags"
-import { PluginOptions, SiteMap } from "./types"
+import { PluginOptions, Sitemap } from "./types"
 
 const DEFAULT_QUERY = `
   allSitePage {
@@ -14,7 +14,7 @@ const DEFAULT_SITEMAP_ROOT = {
   fileName: "sitemap",
   createLinkInHead: true,
   queryName: "allSitePage",
-  serialize: (page: any) => page.path,
+  serializer: (page: any) => page.path,
 }
 
 const DEFAULT_XML_ATTRIBUTES = 'version="1.0" encoding="UTF-8"'
@@ -36,7 +36,17 @@ export const pluginOptionsSchema = ({ Joi }: any) => {
     }
   }
 
-  const validateSitemap = (sitemap: SiteMap) => {
+  const validationSerializeQuery = ({ serializer, queryName }: Sitemap) => {
+    if (!!serializer !== !!queryName) {
+      new Error(
+        stripIndent`
+        Invalid plugin options for "gatsby-plugin-sitemap":
+        You must add both serialize and queryName (or neither)`
+      )
+    }
+  }
+
+  const validateSitemap = (sitemap: Sitemap) => {
     sitemapSchema.validate(sitemap)
   }
 
@@ -47,15 +57,18 @@ export const pluginOptionsSchema = ({ Joi }: any) => {
     outputFolder: Joi.string().description(
       "Path appended at the end of the global outputFolder path"
     ),
+    lastmod: Joi.date().description("lastmod value for this sitemap"),
     children: Joi.array()
       .items(Joi.object().external(validateSitemap))
       .description("Children sitemap, referenced into parent"),
-    queryName: Joi.string().description(
-      "Name of the graphQL query (ex : allSitePage)"
+    queryName: Joi.string()
+      .external(validationSerializeQuery)
+      .description("Name of the graphQL query (ex : allSitePage)"),
+    excludes: Joi.array().description(
+      "Array of string/regex to excludes some url from the sitemap"
     ),
-    excludes: Joi.alternatives().try(Joi.string(), Joi.object().type("RegExp")),
     filterPages: Joi.function(),
-    serialize: Joi.function(),
+    serializer: Joi.function().external(validationSerializeQuery),
     xmlAnchorAttributes: Joi.string()
       .default(DEFAULT_XML_ATTRIBUTES)
       .description("Attribute to add <?xml {here} ?>"),
@@ -78,10 +91,10 @@ export const pluginOptionsSchema = ({ Joi }: any) => {
         If you fetch pages without using \`allSitePage.nodes\` query structure
         you will definately need to customize the \`resolvePages\` function.`
       ),
-    sitemapRoot: Joi.object()
+    sitemapTree: Joi.object()
       .default(DEFAULT_SITEMAP_ROOT)
       .external((pluginOption: PluginOptions) =>
-        validateSitemap(pluginOption.sitemapRoot)
+        validateSitemap(pluginOption.sitemapTree)
       )
       .description(`A sitemap object `),
     outputFolder: Joi.string()
