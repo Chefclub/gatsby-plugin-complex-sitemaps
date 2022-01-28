@@ -6,6 +6,7 @@ import {
   SitemapNode,
 } from "../types"
 import * as path from "path"
+import { sitemapNodeToXML, writeXML } from "../utils"
 
 export default class SitemapManager {
   sitemap: Sitemap
@@ -89,15 +90,43 @@ export default class SitemapManager {
     )
   }
 
-  async generateXML() {
-    await this.generateChildrenXML()
+  async generateXML(pathPrefix: string) {
+    await this.generateChildrenXML(pathPrefix)
     console.log(this.sitemap.fileName, "=>", this.nodes.length)
+
+    let xml = ""
+
+    for (const node of this.nodes) {
+      xml = `${xml}<url>${sitemapNodeToXML(node)}</url>`
+    }
+    console.log("pathPrefix", pathPrefix)
+    console.log(
+      'this.sitemap.outputFolder ?? ""',
+      this.sitemap.outputFolder ?? ""
+    )
+
+    const writeFolderPath = path.join(
+      pathPrefix,
+      this.sitemap.outputFolder ?? ""
+    )
+    console.log("writeFolderPath", writeFolderPath)
+
+    writeXML(
+      `
+      <?xml ${this.sitemap.xmlAnchorAttributes ?? ""}?>
+      <urlset ${this.sitemap.urlsetAnchorAttributes ?? ""}>
+        ${xml}
+      </urlset>
+    `,
+      writeFolderPath,
+      this.sitemap.fileName
+    )
   }
 
-  async generateChildrenXML() {
+  async generateChildrenXML(pathPrefix: string) {
     await Promise.all(
       this.children?.map(async (child: SitemapManager) => {
-        await child.generateXML()
+        await child.generateXML(pathPrefix)
       })
     )
   }

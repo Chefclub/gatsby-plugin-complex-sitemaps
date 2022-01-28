@@ -4,6 +4,8 @@ import { pluginOptionsSchema } from "./options-validation"
 import SitemapManager from "./Sitemap/SitemapManager"
 import * as path from "path"
 
+const PUBLIC_PATH = "./public"
+
 const SITE_INFO_QUERY = `{
   site {
     siteMetadata {
@@ -13,7 +15,7 @@ const SITE_INFO_QUERY = `{
 }`
 
 exports.onPostBuild = async (
-  { graphql }: BuildArgs,
+  { graphql, pathPrefix }: BuildArgs,
   pluginOptions: PluginOptions
 ) => {
   //Run queries
@@ -26,8 +28,7 @@ exports.onPostBuild = async (
     siteInfo.site.siteMetadata.siteUrl,
     pluginOptions.outputFolder
   )
-
-  console.log("Base folder", pluginOptions.outputFolder)
+  const basePath = path.join(PUBLIC_PATH, pathPrefix)
 
   //Format Queries data
 
@@ -41,7 +42,7 @@ exports.onPostBuild = async (
   console.log("Populating ended")
 
   //Generate XML file content
-  await rootManager.generateXML()
+  await rootManager.generateXML(basePath)
 
   //Write Files
 
