@@ -1,33 +1,47 @@
 import { BuildArgs } from "gatsby"
-import { PluginOptions } from "./types"
+import { PluginOptions, SiteInfo } from "./types"
 import { pluginOptionsSchema } from "./options-validation"
-import { oneLine } from "common-tags"
+import SitemapManager from "./Sitemap/SitemapManager"
+import * as path from "path"
 
-const SITE_INFO_QUERY = `
+const SITE_INFO_QUERY = `{
   site {
     siteMetadata {
       siteUrl
     }
   }
-`
+}`
 
 exports.onPostBuild = async (
-  { graphql, pathPrefix }: BuildArgs,
+  { graphql }: BuildArgs,
   pluginOptions: PluginOptions
 ) => {
-  console.log("pathPrefix : ", pathPrefix)
+  //Run queries
+  const siteInfo = (await graphql(SITE_INFO_QUERY)).data as SiteInfo
+  console.log("siteInfo", siteInfo)
+  const queryData = (await graphql(pluginOptions.query)).data
 
   //Reformat options and behavior
-  const completedQuery = oneLine`{${SITE_INFO_QUERY}${pluginOptions.query}}`
-  console.log("completedQuery : ", completedQuery)
+  pluginOptions.outputFolderURL = path.join(
+    siteInfo.site.siteMetadata.siteUrl,
+    pluginOptions.outputFolder
+  )
 
-  //Run queries
-  const queryData = await graphql(completedQuery)
-  console.log("queryData : ", JSON.stringify(queryData))
+  console.log("Base folder", pluginOptions.outputFolder)
 
   //Format Queries data
 
+  //Init manager
+  const rootManager = new SitemapManager(
+    pluginOptions.sitemapTree,
+    pluginOptions
+  )
+  console.log("Populating started")
+  await rootManager.populate(queryData)
+  console.log("Populating ended")
+
   //Generate XML file content
+  await rootManager.generateXML()
 
   //Write Files
 
