@@ -1,6 +1,6 @@
 {
   "name": "gatsby-plugin-complex-sitemaps",
-  "version": "1.0.1",
+  "version": "0.1.0",
   "description": "Gatsby plugin for generating multiple sitemaps from datalayer",
   "main": "dist/gatsby-node.js",
   "types": "dist/index.d.ts",

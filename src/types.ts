@@ -7,14 +7,13 @@ export type PluginOptions = {
   outputFolderURL?: string
   entryLimitPerFile: number
   createLinkInHead: boolean
-  additionalSitemapsPath: string[]
 }
 
 export type Sitemap = {
   //Base options
   fileName: string
   outputFolder?: string
-  lastmod?: string | Date
+  lastmod?: string
 
   //Tree
   children?: Sitemap[]
@@ -26,8 +25,8 @@ export type Sitemap = {
   serializer?: SerializationFunction
 
   //Advanced options
-  xmlAnchorAttributes?: string
-  urlsetAnchorAttributes?: string
+  xmlAnchorAttributes: string
+  urlsetAnchorAttributes: string
 }
 
 export type FilteringFunction = (page: any) => boolean

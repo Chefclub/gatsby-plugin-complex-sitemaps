@@ -7,27 +7,30 @@ import {
 } from "../types"
 import * as path from "path"
 import { sitemapNodeToXML, writeXML } from "../utils"
+import { Reporter } from "gatsby"
 
 export default class SitemapManager {
   sitemap: Sitemap
   pluginOption: PluginOptions
   children: SitemapManager[]
   nodes: SitemapNode[]
+  reporter: Reporter
 
-  constructor(sitemap: Sitemap, pluginOption: PluginOptions) {
+  constructor(
+    sitemap: Sitemap,
+    pluginOption: PluginOptions,
+    reporter: Reporter
+  ) {
     this.sitemap = sitemap
     this.pluginOption = pluginOption
+    this.reporter = reporter
     this.nodes = []
 
     //"Copy" sitemap.children to children attribute after init a new SitemapManager with it
     this.sitemap.children = this.sitemap?.children ?? []
     this.children = this.sitemap.children.map(
-      (child: Sitemap) => new SitemapManager(child, this.pluginOption)
+      (child: Sitemap) => new SitemapManager(child, this.pluginOption, reporter)
     )
-  }
-
-  getSitemap() {
-    return this.sitemap
   }
 
   async populate(queryData: any) {
@@ -44,10 +47,12 @@ export default class SitemapManager {
         this.pluginOption.outputFolderURL ?? this.pluginOption.outputFolder,
         child.sitemap.fileName
       )
-      console.log("Child : ", child.sitemap.fileName, "=>", childLoc)
+      this.reporter.verbose(
+        `${this.sitemap.fileName} child : ${child.sitemap.fileName} => ${childLoc}`
+      )
       this.nodes.unshift({
         loc: childLoc,
-        lastmod: child.sitemap.lastmod,
+        lastmod: child.sitemap.lastmod ?? new Date().toISOString(),
       })
     })
   }
@@ -75,9 +80,8 @@ export default class SitemapManager {
 
       this.nodes.push(...edges)
     } else {
-      console.log(
-        this.sitemap?.fileName,
-        "=> Invalid query name => only children"
+      this.reporter.warn(
+        `${this.sitemap?.fileName} => Invalid query name (${this.sitemap?.queryName}) => only children`
       )
     }
   }
@@ -92,34 +96,40 @@ export default class SitemapManager {
 
   async generateXML(pathPrefix: string) {
     await this.generateChildrenXML(pathPrefix)
-    console.log(this.sitemap.fileName, "=>", this.nodes.length)
-
-    let xml = ""
-
-    for (const node of this.nodes) {
-      xml = `${xml}<url>${sitemapNodeToXML(node)}</url>`
-    }
-    console.log("pathPrefix", pathPrefix)
-    console.log(
-      'this.sitemap.outputFolder ?? ""',
-      this.sitemap.outputFolder ?? ""
-    )
 
     const writeFolderPath = path.join(
       pathPrefix,
-      this.sitemap.outputFolder ?? ""
+      this.sitemap.outputFolder ?? this.pluginOption.outputFolder ?? ""
     )
-    console.log("writeFolderPath", writeFolderPath)
+    const XMLs = [""]
 
-    writeXML(
-      `
-      <?xml ${this.sitemap.xmlAnchorAttributes ?? ""}?>
-      <urlset ${this.sitemap.urlsetAnchorAttributes ?? ""}>
-        ${xml}
-      </urlset>
-    `,
-      writeFolderPath,
-      this.sitemap.fileName
+    //Format every node attribute into xml field and add it to the xml string until it's full then add it to the next xml string
+    this.nodes.forEach((node: SitemapNode, index: number) => {
+      const i = parseInt(
+        `${Math.floor(index / this.pluginOption.entryLimitPerFile)}`
+      )
+      if (XMLs[i] === undefined) XMLs.push("")
+      XMLs[i] = `${XMLs[i]}<url>${sitemapNodeToXML(node)}</url>`
+    })
+
+    //For each xml string, add xml and urlset, process the file name and write it
+    await Promise.all(
+      XMLs.map(async (xml: string, index) => {
+        xml = `
+          <?xml ${this.sitemap.xmlAnchorAttributes ?? ""}?>
+          <urlset ${this.sitemap.urlsetAnchorAttributes ?? ""}>
+            ${xml}
+          </urlset>
+        `
+
+        const finalFileName =
+          XMLs.length > 1
+            ? this.sitemap.fileName.replace(/\.xml$/, `-${index + 1}.xml`)
+            : this.sitemap.fileName
+
+        this.reporter.verbose(`Writting ${finalFileName} in ${writeFolderPath}`)
+        writeXML(xml, writeFolderPath, finalFileName)
+      })
     )
   }
 

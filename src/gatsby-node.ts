@@ -3,6 +3,7 @@ import { PluginOptions, SiteInfo } from "./types"
 import { pluginOptionsSchema } from "./options-validation"
 import SitemapManager from "./Sitemap/SitemapManager"
 import * as path from "path"
+import { msg } from "./utils"
 
 const PUBLIC_PATH = "./public"
 
@@ -15,12 +16,15 @@ const SITE_INFO_QUERY = `{
 }`
 
 exports.onPostBuild = async (
-  { graphql, pathPrefix }: BuildArgs,
+  { graphql, pathPrefix, reporter }: BuildArgs,
   pluginOptions: PluginOptions
 ) => {
+  const timer = reporter.activityTimer(msg(`Generating sitemaps`))
+  timer.start()
+
   //Run queries
   const siteInfo = (await graphql(SITE_INFO_QUERY)).data as SiteInfo
-  console.log("siteInfo", siteInfo)
+
   const queryData = (await graphql(pluginOptions.query)).data
 
   //Reformat options and behavior
@@ -28,23 +32,24 @@ exports.onPostBuild = async (
     siteInfo.site.siteMetadata.siteUrl,
     pluginOptions.outputFolder
   )
-  const basePath = path.join(PUBLIC_PATH, pathPrefix)
 
-  //Format Queries data
+  const basePath = path.join(PUBLIC_PATH, pathPrefix)
 
   //Init manager
   const rootManager = new SitemapManager(
     pluginOptions.sitemapTree,
-    pluginOptions
+    pluginOptions,
+    reporter
   )
-  console.log("Populating started")
-  await rootManager.populate(queryData)
-  console.log("Populating ended")
 
-  //Generate XML file content
+  reporter.verbose("Start populating sitemap")
+  await rootManager.populate(queryData)
+  reporter.verbose("Populating sitemap ended")
+
+  //Generate XML file content & write files
   await rootManager.generateXML(basePath)
 
-  //Write Files
+  timer.end()
 
   return
 }
