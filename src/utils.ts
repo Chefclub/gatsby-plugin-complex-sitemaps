@@ -8,6 +8,7 @@ export const sitemapNodeToXML = (
   let xml = ""
 
   for (const tag in node) {
+    if (tag === "type") continue
     let content = ""
     const tagValue = node[tag]
     if (typeof tagValue === "string") {

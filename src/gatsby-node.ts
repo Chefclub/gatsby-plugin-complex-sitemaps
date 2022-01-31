@@ -28,10 +28,10 @@ exports.onPostBuild = async (
   const queryData = (await graphql(pluginOptions.query)).data
 
   //Reformat options and behavior
-  pluginOptions.outputFolderURL = path.join(
-    siteInfo.site.siteMetadata.siteUrl,
-    pluginOptions.outputFolder
-  )
+  pluginOptions.outputFolderURL = new URL(
+    pluginOptions.outputFolder,
+    siteInfo.site.siteMetadata.siteUrl
+  ).href
 
   const basePath = path.join(PUBLIC_PATH, pathPrefix)
 

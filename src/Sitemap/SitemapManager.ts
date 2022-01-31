@@ -51,6 +51,7 @@ export default class SitemapManager {
         `${this.sitemap.fileName} child : ${child.sitemap.fileName} => ${childLoc}`
       )
       this.nodes.unshift({
+        type: "sitemap",
         loc: childLoc,
         lastmod: child.sitemap.lastmod ?? new Date().toISOString(),
       })
@@ -75,7 +76,10 @@ export default class SitemapManager {
       }
 
       edges = await Promise.all(
-        edges.map(async (edge: any) => await serializationFunction(edge.node))
+        edges.map(async (edge: any) => ({
+          ...(await serializationFunction(edge.node)),
+          type: "url",
+        }))
       )
 
       this.nodes.push(...edges)
@@ -101,35 +105,67 @@ export default class SitemapManager {
       pathPrefix,
       this.sitemap.outputFolder ?? this.pluginOption.outputFolder ?? ""
     )
-    const XMLs = [""]
+
+    const XMLs: {
+      sitemap: string[]
+      url: string[]
+    }[] = [{ sitemap: [], url: [] }]
 
     //Format every node attribute into xml field and add it to the xml string until it's full then add it to the next xml string
-    this.nodes.forEach((node: SitemapNode, index: number) => {
-      const i = parseInt(
-        `${Math.floor(index / this.pluginOption.entryLimitPerFile)}`
-      )
-      if (XMLs[i] === undefined) XMLs.push("")
-      XMLs[i] = `${XMLs[i]}<url>${sitemapNodeToXML(node)}</url>`
-    })
+    this.nodes
+      .sort(orderSitemapFirst)
+      .forEach((node: SitemapNode, index: number) => {
+        const i = parseInt(
+          `${Math.floor(index / this.pluginOption.entryLimitPerFile)}`
+        )
+        XMLs[i][node?.type].push(
+          `<${node.type}>${sitemapNodeToXML(node)}</${node.type}>`
+        )
+      })
 
     //For each xml string, add xml and urlset, process the file name and write it
     await Promise.all(
-      XMLs.map(async (xml: string, index) => {
-        xml = `
+      XMLs.map(
+        async (
+          xml: {
+            sitemap: string[]
+            url: string[]
+          },
+          index
+        ) => {
+          const xmlContent = `
           <?xml ${this.sitemap.xmlAnchorAttributes ?? ""}?>
-          <urlset ${this.sitemap.urlsetAnchorAttributes ?? ""}>
-            ${xml}
-          </urlset>
+          ${
+            xml.sitemap.length
+              ? `
+                  <sitemapindex ${this.sitemap.urlsetAnchorAttributes ?? ""}>
+                    ${xml.sitemap.join("\n")}
+                  </sitemapindex>
+              `
+              : ""
+          }
+          ${
+            xml.url.length
+              ? `
+                  <urlset ${this.sitemap.urlsetAnchorAttributes ?? ""}>
+                    ${xml.url.join("\n")}
+                  </urlset>
+              `
+              : ""
+          }
         `
 
-        const finalFileName =
-          XMLs.length > 1
-            ? this.sitemap.fileName.replace(/\.xml$/, `-${index + 1}.xml`)
-            : this.sitemap.fileName
+          const finalFileName =
+            XMLs.length > 1
+              ? this.sitemap.fileName.replace(/\.xml$/, `-${index + 1}.xml`)
+              : this.sitemap.fileName
 
-        this.reporter.verbose(`Writting ${finalFileName} in ${writeFolderPath}`)
-        writeXML(xml, writeFolderPath, finalFileName)
-      })
+          this.reporter.verbose(
+            `Writting ${finalFileName} in ${writeFolderPath}`
+          )
+          writeXML(xmlContent, writeFolderPath, finalFileName)
+        }
+      )
     )
   }
 
@@ -139,5 +175,15 @@ export default class SitemapManager {
         await child.generateXML(pathPrefix)
       })
     )
+  }
+}
+
+const orderSitemapFirst = (a: SitemapNode, b: SitemapNode) => {
+  if (a.type === "url" && b.type === "sitemap") {
+    return -1
+  } else if (a.type === "sitemap" && b.type === "url") {
+    return 1
+  } else {
+    return 0
   }
 }

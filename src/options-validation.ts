@@ -11,7 +11,7 @@ const DEFAULT_QUERY = `
 `
 
 const DEFAULT_XML_ATTRIBUTES = 'version="1.0" encoding="UTF-8"'
-const DEFAULT_URLSET_ATTRIBUTES =
+const DEFAULT_URLSET_SITEMAPINDEX_ATTRIBUTES =
   'xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"'
 
 export const pluginOptionsSchema = ({ Joi }: any) => {
@@ -64,7 +64,10 @@ export const pluginOptionsSchema = ({ Joi }: any) => {
       .default(DEFAULT_XML_ATTRIBUTES)
       .description("Attribute to add <?xml {here} ?>"),
     urlsetAnchorAttributes: Joi.string()
-      .default(DEFAULT_URLSET_ATTRIBUTES)
+      .default(DEFAULT_URLSET_SITEMAPINDEX_ATTRIBUTES)
+      .description("Attribute to add <urlset {here} >"),
+    sitemapindexAnchorAttributes: Joi.string()
+      .default(DEFAULT_URLSET_SITEMAPINDEX_ATTRIBUTES)
       .description("Attribute to add <urlset {here} >"),
   })
 

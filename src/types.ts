@@ -27,6 +27,7 @@ export type Sitemap = {
   //Advanced options
   xmlAnchorAttributes: string
   urlsetAnchorAttributes: string
+  sitemapindexAnchorAttributes: string
 }
 
 export type FilteringFunction = (page: any) => boolean
@@ -34,6 +35,7 @@ export type FilteringFunction = (page: any) => boolean
 export type SerializationFunction = (page: any) => SitemapNode
 
 export type SitemapNode = {
+  type: "url" | "sitemap"
   loc: string
   changefreq?: string
   priority?: string
