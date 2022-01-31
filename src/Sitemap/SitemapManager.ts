@@ -76,10 +76,16 @@ export default class SitemapManager {
       }
 
       edges = await Promise.all(
-        edges.map(async (edge: any) => ({
-          ...(await serializationFunction(edge.node)),
-          type: "url",
-        }))
+        edges.map(async (edge: any) => {
+          const serializedNode = await serializationFunction(edge.node)
+          return {
+            ...serializedNode,
+            loc:
+              (this.pluginOption.outputFolderURL ??
+                this.pluginOption.outputFolder) + serializedNode.loc,
+            type: "url",
+          }
+        })
       )
 
       this.nodes.push(...edges)
@@ -133,8 +139,7 @@ export default class SitemapManager {
           },
           index
         ) => {
-          const xmlContent = `
-          <?xml ${this.sitemap.xmlAnchorAttributes ?? ""}?>
+          const xmlContent = `<?xml ${this.sitemap.xmlAnchorAttributes ?? ""}?>
           ${
             xml.sitemap.length
               ? `
