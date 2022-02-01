@@ -27,7 +27,7 @@ export const writeXML = (xml: string, folderPath: string, filename: string) => {
     fs.mkdirSync(folderPath, { recursive: true })
   }
   const filePath = path.join(folderPath, filename)
-  fs.writeFileSync(filePath, xml, { flag: "a" })
+  fs.writeFileSync(filePath, xml)
 }
 
 export const msg = (msg: string) => `gatsby-plugin-complex-sitemaps - ${msg}`
