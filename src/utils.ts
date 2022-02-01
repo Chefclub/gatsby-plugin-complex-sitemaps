@@ -12,7 +12,7 @@ export const sitemapNodeToXML = (
     let content = ""
     const tagValue = node[tag]
     if (typeof tagValue === "string") {
-      content = tagValue as string
+      content = encodeXML(tagValue as string)
     } else {
       content = sitemapNodeToXML(tagValue as SitemapSubNode)
     }
@@ -31,3 +31,11 @@ export const writeXML = (xml: string, folderPath: string, filename: string) => {
 }
 
 export const msg = (msg: string) => `gatsby-plugin-complex-sitemaps - ${msg}`
+
+const encodeXML = (text: string) =>
+  text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;")
