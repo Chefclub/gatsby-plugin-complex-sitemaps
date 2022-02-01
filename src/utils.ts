@@ -34,17 +34,19 @@ export const msg = (msg: string) => `gatsby-plugin-complex-sitemaps - ${msg}`
 
 export const joinURL = (baseURL: string, ...parts: string[]) => {
   //Remove start/end slash on parts
-  parts = parts.map((part: string) =>
-    part.replace(/\/$/, "").replace(/^\//, "")
+  parts = parts.map((part: string, index: number) =>
+    index + 1 === parts.length
+      ? part.replace(/^\/*/, "").replace(/\/*$/, "")
+      : part.replace(/^\/*/, "")
   )
   //Add / at the end of parts
   parts = parts.map((part: string) => `${part}`)
 
   //Remove end slash of baseURL
-  baseURL = baseURL.replace(/\/$/, "")
+  baseURL = baseURL.replace(/\/*$/, "")
 
   //Return https://www.example.com/part1/part2/part3/
-  return `${baseURL}/${parts.join("/")}/`
+  return `${baseURL}/${parts.join("/")}`
 }
 
 const encodeXML = (text: string) =>
