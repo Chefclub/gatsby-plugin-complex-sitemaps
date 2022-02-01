@@ -5,6 +5,7 @@ export type PluginOptions = {
 
   outputFolder: string
   outputFolderURL?: string
+  outputURL?: string
   entryLimitPerFile: number
   createLinkInHead: boolean
 }

@@ -71,8 +71,17 @@ export default class SitemapManager {
         this.sitemap.serializer
 
       if (this.sitemap?.filterPages) {
+        this.reporter.verbose(
+          `Filtering function found for ${this.sitemap.fileName}, start filtering`
+        )
         const filterFunction: FilteringFunction = this.sitemap?.filterPages
+        const beforeFilteringLength = edges.length
         edges = edges.filter((edge: any) => filterFunction(edge.node))
+        this.reporter.verbose(
+          `Filtering ended : ${
+            beforeFilteringLength - edges.length
+          } node removed`
+        )
       }
 
       edges = await Promise.all(
@@ -80,9 +89,10 @@ export default class SitemapManager {
           const serializedNode = await serializationFunction(edge.node)
           return {
             ...serializedNode,
-            loc:
-              (this.pluginOption.outputFolderURL ??
-                this.pluginOption.outputFolder) + serializedNode.loc,
+            loc: joinURL(
+              this.pluginOption.outputURL ?? this.pluginOption.outputFolder,
+              serializedNode.loc
+            ),
             type: "url",
           }
         })
@@ -124,6 +134,9 @@ export default class SitemapManager {
         const i = parseInt(
           `${Math.floor(index / this.pluginOption.entryLimitPerFile)}`
         )
+        if (!XMLs[i]) {
+          XMLs[i] = { sitemap: [], url: [] }
+        }
         XMLs[i][node?.type].push(
           `<${node.type}>${sitemapNodeToXML(node)}</${node.type}>`
         )
