@@ -32,6 +32,21 @@ export const writeXML = (xml: string, folderPath: string, filename: string) => {
 
 export const msg = (msg: string) => `gatsby-plugin-complex-sitemaps - ${msg}`
 
+export const joinURL = (baseURL: string, ...parts: string[]) => {
+  //Remove start/end slash on parts
+  parts = parts.map((part: string) =>
+    part.replace(/\/$/, "").replace(/^\//, "")
+  )
+  //Add / at the end of parts
+  parts = parts.map((part: string) => `${part}`)
+
+  //Remove end slash of baseURL
+  baseURL = baseURL.replace(/\/$/, "")
+
+  //Return https://www.example.com/part1/part2/part3/
+  return `${baseURL}/${parts.join("/")}/`
+}
+
 const encodeXML = (text: string) =>
   text
     .replace(/&/g, "&amp;")

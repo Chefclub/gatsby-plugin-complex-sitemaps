@@ -6,7 +6,7 @@ import {
   SitemapNode,
 } from "../types"
 import * as path from "path"
-import { sitemapNodeToXML, writeXML } from "../utils"
+import { joinURL, sitemapNodeToXML, writeXML } from "../utils"
 import { Reporter } from "gatsby"
 
 export default class SitemapManager {
@@ -43,7 +43,7 @@ export default class SitemapManager {
 
   populateWithChildren() {
     this.children?.forEach((child: SitemapManager) => {
-      const childLoc = path.join(
+      const childLoc = joinURL(
         this.pluginOption.outputFolderURL ?? this.pluginOption.outputFolder,
         child.sitemap.fileName
       )

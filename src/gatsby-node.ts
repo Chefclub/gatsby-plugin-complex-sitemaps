@@ -3,7 +3,7 @@ import { PluginOptions, SiteInfo } from "./types"
 import { pluginOptionsSchema } from "./options-validation"
 import SitemapManager from "./Sitemap/SitemapManager"
 import * as path from "path"
-import { msg } from "./utils"
+import { joinURL, msg } from "./utils"
 
 const PUBLIC_PATH = "./public"
 
@@ -28,10 +28,10 @@ exports.onPostBuild = async (
   const queryData = (await graphql(pluginOptions.query)).data
 
   //Reformat options and behavior
-  pluginOptions.outputFolderURL = new URL(
+  pluginOptions.outputFolderURL = joinURL(
     pluginOptions.outputFolder,
     siteInfo.site.siteMetadata.siteUrl
-  ).href
+  )
 
   const basePath = path.join(PUBLIC_PATH, pathPrefix)
 
