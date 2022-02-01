@@ -21,7 +21,6 @@ export type Sitemap = {
 
   //Datas
   queryName?: string
-  excludes?: (RegExp | string)[]
   filterPages?: FilteringFunction
   serializer?: SerializationFunction
 

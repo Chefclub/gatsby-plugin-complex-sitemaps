@@ -53,9 +53,6 @@ export const pluginOptionsSchema = ({ Joi }: any) => {
     queryName: Joi.string()
       .external(validationSerializeQuery)
       .description("Name of the graphQL query (ex : allSitePage)"),
-    excludes: Joi.array().description(
-      "Array of string/regex to excludes some url from the sitemap"
-    ),
     filterPages: Joi.function().description(
       "Filter pages by returning true or false"
     ),
