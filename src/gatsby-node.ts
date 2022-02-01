@@ -5,6 +5,8 @@ import SitemapManager from "./Sitemap/SitemapManager"
 import * as path from "path"
 import { joinURL, msg } from "./utils"
 
+import { version } from "../package.json"
+
 const PUBLIC_PATH = "./public"
 
 const SITE_INFO_QUERY = `{
@@ -19,6 +21,7 @@ exports.onPostBuild = async (
   { graphql, pathPrefix, reporter }: BuildArgs,
   pluginOptions: PluginOptions
 ) => {
+  reporter.verbose(`gatsby-plugin-complex-sitemap-tree version ${version}`)
   const timer = reporter.activityTimer(msg(`Generating sitemaps`))
   timer.start()
 
