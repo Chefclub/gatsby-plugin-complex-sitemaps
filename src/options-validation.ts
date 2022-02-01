@@ -87,7 +87,7 @@ export const pluginOptionsSchema = ({ Joi }: any) => {
       ),
     sitemapTree: sitemapSchema.description(`A sitemap object `),
     outputFolder: Joi.string()
-      .default(`/`)
+      .default(``)
       .description(`Folder path where sitemaps are stored in \`public\`.`),
     entryLimitPerFile: Joi.number()
       .min(1)

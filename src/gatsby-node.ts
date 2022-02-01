@@ -29,8 +29,8 @@ exports.onPostBuild = async (
 
   //Reformat options and behavior
   pluginOptions.outputFolderURL = joinURL(
-    pluginOptions.outputFolder,
-    siteInfo.site.siteMetadata.siteUrl
+    siteInfo.site.siteMetadata.siteUrl,
+    pluginOptions.outputFolder
   )
 
   const basePath = path.join(PUBLIC_PATH, pathPrefix)
