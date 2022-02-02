@@ -46,6 +46,9 @@ export const pluginOptionsSchema = ({ Joi }: any) => {
     outputFolder: Joi.string().description(
       "Path appended at the end of the global outputFolder path"
     ),
+    xslPath: Joi.string().description(
+      "Path to the xsl file used to pimp your sitemap !"
+    ),
     lastmod: Joi.string().description("lastmod value for this sitemap"),
     children: Joi.array().items(
       Joi.link("...").description("Children sitemap, referenced into parent")
@@ -99,5 +102,8 @@ export const pluginOptionsSchema = ({ Joi }: any) => {
       .description(
         "Whether to populate the head of your site with a link to the sitemap."
       ),
+    xslPath: Joi.string().description(
+      "Path to the xsl file used to pimp your sitemap !"
+    ),
   })
 }

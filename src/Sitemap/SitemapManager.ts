@@ -8,29 +8,93 @@ import {
 import * as path from "path"
 import { joinURL, sitemapNodeToXML, writeXML } from "../utils"
 import { Reporter } from "gatsby"
+import { oneLine } from "common-tags"
 
 export default class SitemapManager {
   sitemap: Sitemap
-  pluginOption: PluginOptions
+  pluginOptions: PluginOptions
   children: SitemapManager[]
   nodes: SitemapNode[]
   reporter: Reporter
 
   constructor(
     sitemap: Sitemap,
-    pluginOption: PluginOptions,
+    pluginOptions: PluginOptions,
     reporter: Reporter
   ) {
     this.sitemap = sitemap
-    this.pluginOption = pluginOption
+    this.pluginOptions = pluginOptions
     this.reporter = reporter
     this.nodes = []
 
     //"Copy" sitemap.children to children attribute after init a new SitemapManager with it
     this.sitemap.children = this.sitemap?.children ?? []
-    this.children = this.sitemap.children.map(
-      (child: Sitemap) => new SitemapManager(child, this.pluginOption, reporter)
+    this.children = this.sitemap.children.map((child: Sitemap) => {
+      //Merge sitemap specific outputFolder (if exist) with child.outputFolder, pluginOptions.outputFolder and pluginOptions.outputFolderURL
+      let childOutputFolder = child.outputFolder
+      let pluginOutputFolder = pluginOptions.outputFolder
+      let pluginOutputFolderURL = pluginOptions.outputFolderURL
+      if (
+        child.outputFolder ||
+        this.sitemap.outputFolder ||
+        this.pluginOptions.outputFolder
+      ) {
+        childOutputFolder = path.join(
+          this.sitemap.outputFolder ?? this.pluginOptions.outputFolder ?? "",
+          child.outputFolder ?? ""
+        )
+        pluginOutputFolder = path.join(
+          this.pluginOptions.outputFolder ?? "",
+          child.outputFolder ?? ""
+        )
+        pluginOutputFolderURL = joinURL(
+          pluginOptions.outputFolderURL ?? "",
+          child.outputFolder ?? ""
+        )
+      }
+
+      //Create SitemapManager for every child and save it into "children" array
+      return new SitemapManager(
+        {
+          ...child,
+          xslPath: child.xslPath ?? pluginOptions.xslPath,
+          outputFolder: childOutputFolder,
+        },
+        {
+          ...this.pluginOptions,
+          outputFolder: pluginOutputFolder,
+          outputFolderURL: pluginOutputFolderURL,
+        },
+        reporter
+      )
+    })
+  }
+
+  getLocs(): string[] {
+    const fileNumber = Math.ceil(
+      this.nodes.length / this.pluginOptions.entryLimitPerFile
     )
+
+    const urls = []
+    if (fileNumber > 1) {
+      for (let i = 1; i <= fileNumber; i++) {
+        urls.push(
+          joinURL(
+            this.pluginOptions.outputFolderURL ??
+              this.pluginOptions.outputFolder,
+            this.sitemap.fileName.replace(/\.xml$/, `-${i}.xml`)
+          )
+        )
+      }
+    } else {
+      urls.push(
+        joinURL(
+          this.pluginOptions.outputFolderURL ?? this.pluginOptions.outputFolder,
+          this.sitemap.fileName
+        )
+      )
+    }
+    return urls
   }
 
   async populate(queryData: any) {
@@ -43,18 +107,19 @@ export default class SitemapManager {
 
   populateWithChildren() {
     this.children?.forEach((child: SitemapManager) => {
-      const childLoc = joinURL(
-        this.pluginOption.outputFolderURL ?? this.pluginOption.outputFolder,
-        child.sitemap.fileName
-      )
+      const childLocs = child.getLocs()
       this.reporter.verbose(
-        `${this.sitemap.fileName} child : ${child.sitemap.fileName} => ${childLoc}`
+        `${this.sitemap.fileName} child : ${
+          child.sitemap.fileName
+        } => ${childLocs.join("&")}`
       )
-      this.nodes.unshift({
-        type: "sitemap",
-        loc: childLoc,
-        lastmod: child.sitemap.lastmod ?? new Date().toISOString(),
-      })
+      childLocs.forEach(loc =>
+        this.nodes.unshift({
+          type: "sitemap",
+          loc: loc,
+          lastmod: child.sitemap.lastmod ?? new Date().toISOString(),
+        })
+      )
     })
   }
 
@@ -70,13 +135,16 @@ export default class SitemapManager {
       const serializationFunction: SerializationFunction =
         this.sitemap.serializer
 
+      //We run the filtering function if the user has passed one
       if (this.sitemap?.filterPages) {
         this.reporter.verbose(
           `Filtering function found for ${this.sitemap.fileName}, start filtering`
         )
         const filterFunction: FilteringFunction = this.sitemap?.filterPages
         const beforeFilteringLength = edges.length
+
         edges = edges.filter((edge: any) => filterFunction(edge.node))
+
         this.reporter.verbose(
           `Filtering ended : ${
             beforeFilteringLength - edges.length
@@ -84,13 +152,14 @@ export default class SitemapManager {
         )
       }
 
+      //We transform each edge from the query result to a SitemapNode
       edges = await Promise.all(
         edges.map(async (edge: any) => {
           const serializedNode = await serializationFunction(edge.node)
           return {
             ...serializedNode,
             loc: joinURL(
-              this.pluginOption.outputURL ?? this.pluginOption.outputFolder,
+              this.pluginOptions.outputURL ?? this.pluginOptions.outputFolder,
               serializedNode.loc
             ),
             type: "url",
@@ -114,15 +183,16 @@ export default class SitemapManager {
     )
   }
 
+  //This function generate the xml of each file of the tree from the leaves to the root
   async generateXML(pathPrefix: string) {
     await this.generateChildrenXML(pathPrefix)
 
     const writeFolderPath = path.join(
       pathPrefix,
-      this.sitemap.outputFolder ?? this.pluginOption.outputFolder ?? ""
+      this.sitemap.outputFolder ?? this.pluginOptions.outputFolder ?? ""
     )
 
-    const XMLs: {
+    const files: {
       sitemap: string[]
       url: string[]
     }[] = [{ sitemap: [], url: [] }]
@@ -131,42 +201,49 @@ export default class SitemapManager {
     this.nodes
       .sort(orderSitemapFirst)
       .forEach((node: SitemapNode, index: number) => {
-        const i = parseInt(
-          `${Math.floor(index / this.pluginOption.entryLimitPerFile)}`
+        const fileIndex = parseInt(
+          `${Math.floor(index / this.pluginOptions.entryLimitPerFile)}`
         )
-        if (!XMLs[i]) {
-          XMLs[i] = { sitemap: [], url: [] }
+        if (!files[fileIndex]) {
+          files[fileIndex] = { sitemap: [], url: [] }
         }
-        XMLs[i][node?.type].push(
+        files[fileIndex][node?.type].push(
           `<${node.type}>${sitemapNodeToXML(node)}</${node.type}>`
         )
       })
 
-    //For each xml string, add xml and urlset, process the file name and write it
+    //For each file we add xml, xsl, urlset and/or sitemapindex, we process the file name and write it
     await Promise.all(
-      XMLs.map(
+      files.map(
         async (
-          xml: {
+          file: {
             sitemap: string[]
             url: string[]
           },
           index
         ) => {
-          const xmlContent = `<?xml ${this.sitemap.xmlAnchorAttributes ?? ""}?>
+          const xmlContent = oneLine`<?xml ${
+            this.sitemap.xmlAnchorAttributes ?? ""
+          }?>
           ${
-            xml.sitemap.length
+            this.sitemap.xslPath
+              ? `<?xml-stylesheet type="text/xsl" href="${this.sitemap.xslPath}"?>`
+              : ""
+          }
+          ${
+            file.sitemap.length
               ? `
                   <sitemapindex ${this.sitemap.urlsetAnchorAttributes ?? ""}>
-                    ${xml.sitemap.join("\n")}
+                    ${file.sitemap.join("\n")}
                   </sitemapindex>
               `
               : ""
           }
           ${
-            xml.url.length
+            file.url.length
               ? `
                   <urlset ${this.sitemap.urlsetAnchorAttributes ?? ""}>
-                    ${xml.url.join("\n")}
+                    ${file.url.join("\n")}
                   </urlset>
               `
               : ""
@@ -174,7 +251,7 @@ export default class SitemapManager {
         `
 
           const finalFileName =
-            XMLs.length > 1
+            files.length > 1
               ? this.sitemap.fileName.replace(/\.xml$/, `-${index + 1}.xml`)
               : this.sitemap.fileName
 

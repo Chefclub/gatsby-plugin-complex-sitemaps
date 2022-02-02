@@ -8,7 +8,7 @@ export const sitemapNodeToXML = (
   let xml = ""
 
   for (const tag in node) {
-    if (tag === "type") continue
+    if (tag === "type") continue //We do not write the "type" attribute which is used in SitemapManager
     let content = ""
     const tagValue = node[tag]
     if (typeof tagValue === "string") {

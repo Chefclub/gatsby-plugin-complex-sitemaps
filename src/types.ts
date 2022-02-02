@@ -4,10 +4,13 @@ export type PluginOptions = {
   sitemapTree: Sitemap
 
   outputFolder: string
-  outputFolderURL?: string
-  outputURL?: string
+  xslPath?: string
   entryLimitPerFile: number
   createLinkInHead: boolean
+
+  //Run-time
+  outputFolderURL?: string
+  outputURL?: string
 }
 
 export type Sitemap = {
@@ -15,6 +18,7 @@ export type Sitemap = {
   fileName: string
   outputFolder?: string
   lastmod?: string
+  xslPath?: string
 
   //Tree
   children?: Sitemap[]

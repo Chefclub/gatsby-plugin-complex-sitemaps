@@ -37,18 +37,19 @@ exports.onPostBuild = async (
 
   const basePath = path.join(PUBLIC_PATH, pathPrefix)
 
-  //Init manager
+  //Init root manager => recursively init children manager
   const rootManager = new SitemapManager(
     pluginOptions.sitemapTree,
     pluginOptions,
     reporter
   )
 
+  //Run query and populate all managers with query data and parent/children information
   reporter.verbose("Start populating sitemap")
   await rootManager.populate(queryData)
   reporter.verbose("Populating sitemap ended")
 
-  //Generate XML file content & write files
+  //Generate the content of XML files and write the files recursively
   await rootManager.generateXML(basePath)
 
   timer.end()
