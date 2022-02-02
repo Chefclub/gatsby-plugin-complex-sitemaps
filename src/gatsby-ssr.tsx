@@ -13,18 +13,22 @@ exports.onRenderBody = (
   { setHeadComponents }: RenderBodyArgs,
   pluginOptions: PluginOptions
 ) => {
-  const { outputFolder, createLinkInHead } = pluginOptions
+  const { outputFolder, createLinkInHead, sitemapTree } = pluginOptions
 
   if (!createLinkInHead) {
     return
   }
 
+  const urlParts = sitemapTree.outputFolder
+    ? [sitemapTree.outputFolder, sitemapTree.fileName]
+    : [sitemapTree.fileName]
+
   setHeadComponents([
     <link
-      key={`gatsby-plugin-sitemap`}
+      key={`gatsby-plugin-complex-sitemap-tree`}
       rel="sitemap"
       type="application/xml"
-      href={withPrefix(posix.join(outputFolder, `/sitemap-index.xml`))}
+      href={withPrefix(posix.join(outputFolder, ...urlParts))}
     />,
   ])
 }
