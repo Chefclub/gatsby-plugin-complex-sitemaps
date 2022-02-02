@@ -62,13 +62,13 @@ export const pluginOptionsSchema = ({ Joi }: any) => {
     serializer: Joi.function().external(validationSerializeQuery),
     xmlAnchorAttributes: Joi.string()
       .default(DEFAULT_XML_ATTRIBUTES)
-      .description("Attribute to add <?xml {here} ?>"),
+      .description("Attributes to add <?xml {here} ?>"),
     urlsetAnchorAttributes: Joi.string()
       .default(DEFAULT_URLSET_SITEMAPINDEX_ATTRIBUTES)
-      .description("Attribute to add <urlset {here} >"),
+      .description("Attributes to add <urlset {here} >"),
     sitemapindexAnchorAttributes: Joi.string()
       .default(DEFAULT_URLSET_SITEMAPINDEX_ATTRIBUTES)
-      .description("Attribute to add <urlset {here} >"),
+      .description("Attributes to add <sitemap {here} >"),
   })
 
   return Joi.object({
