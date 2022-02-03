@@ -105,7 +105,7 @@ Each `sitemapTree` object leads to **one file** except in the case where the lim
 |   | urlsetAnchorAttributes | Attributes to add `<urlset {here} >` | `xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"` | `xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1"`|
 |   | sitemapindexAnchorAttributes | Attributes to add `<sitemap {here} >` | `xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"` | |
 
-## Précisions
+## Clarification
 ### XML generation
 The `serializer` option should return an object with at least a `loc` attribute **but** can return a lot more.
 
