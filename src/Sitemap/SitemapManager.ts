@@ -8,7 +8,6 @@ import {
 import * as path from "path"
 import { joinURL, sitemapNodeToXML, writeXML } from "../utils"
 import { Reporter } from "gatsby"
-import { oneLine } from "common-tags"
 
 export default class SitemapManager {
   sitemap: Sitemap
@@ -48,6 +47,7 @@ export default class SitemapManager {
           child.outputFolder ?? ""
         )
         pluginOutputFolderURL = joinURL(
+          "auto",
           pluginOptions.outputFolderURL ?? "",
           child.outputFolder ?? ""
         )
@@ -80,6 +80,7 @@ export default class SitemapManager {
       for (let i = 1; i <= fileNumber; i++) {
         urls.push(
           joinURL(
+            "remove",
             this.pluginOptions.outputFolderURL ??
               this.pluginOptions.outputFolder,
             this.sitemap.fileName.replace(/\.xml$/, `-${i}.xml`)
@@ -89,6 +90,7 @@ export default class SitemapManager {
     } else {
       urls.push(
         joinURL(
+          "remove",
           this.pluginOptions.outputFolderURL ?? this.pluginOptions.outputFolder,
           this.sitemap.fileName
         )
@@ -159,6 +161,7 @@ export default class SitemapManager {
           return {
             ...serializedNode,
             loc: joinURL(
+              this.sitemap.trailingSlash,
               this.pluginOptions.outputURL ?? this.pluginOptions.outputFolder,
               serializedNode.loc
             ),
@@ -186,6 +189,10 @@ export default class SitemapManager {
   //This function generate the xml of each file of the tree from the leaves to the root
   async generateXML(pathPrefix: string) {
     await this.generateChildrenXML(pathPrefix)
+
+    if (!this.sitemap.writeFile) {
+      return
+    }
 
     const writeFolderPath = path.join(
       pathPrefix,
@@ -222,33 +229,21 @@ export default class SitemapManager {
           },
           index
         ) => {
-          const xmlContent = oneLine`<?xml ${
-            this.sitemap.xmlAnchorAttributes ?? ""
-          }?>
-          ${
-            this.sitemap.xslPath
-              ? `<?xml-stylesheet type="text/xsl" href="${this.sitemap.xslPath}"?>`
-              : ""
-          }
-          ${
-            file.sitemap.length
-              ? `
-                  <sitemapindex ${this.sitemap.urlsetAnchorAttributes ?? ""}>
-                    ${file.sitemap.join("\n")}
-                  </sitemapindex>
-              `
-              : ""
-          }
-          ${
-            file.url.length
-              ? `
-                  <urlset ${this.sitemap.urlsetAnchorAttributes ?? ""}>
-                    ${file.url.join("\n")}
-                  </urlset>
-              `
-              : ""
-          }
-        `
+          const xmlContent =
+            `<?xml ${this.sitemap.xmlAnchorAttributes ?? ""}?>\n` +
+            (this.sitemap.xslPath
+              ? `<?xml-stylesheet type="text/xsl" href="${this.sitemap.xslPath}"?>\n`
+              : "") +
+            (file.sitemap.length
+              ? `<sitemapindex ${
+                  this.sitemap.urlsetAnchorAttributes ?? ""
+                }>\n${file.sitemap.join("\n")}\n</sitemapindex>`
+              : "") +
+            (file.url.length
+              ? `<urlset ${
+                  this.sitemap.urlsetAnchorAttributes ?? ""
+                }>\n${file.url.join("\n")}\n</urlset>`
+              : "")
 
           const finalFileName =
             files.length > 1

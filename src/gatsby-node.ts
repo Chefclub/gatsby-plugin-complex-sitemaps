@@ -29,6 +29,7 @@ exports.onPostBuild = async (
 
   //Reformat options and behavior
   pluginOptions.outputFolderURL = joinURL(
+    "auto",
     siteInfo.site.siteMetadata.siteUrl,
     pluginOptions.outputFolder
   )

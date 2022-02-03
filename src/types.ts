@@ -15,6 +15,7 @@ export type PluginOptions = {
 
 export type Sitemap = {
   //Base options
+  writeFile?: boolean
   fileName: string
   outputFolder?: string
   lastmod?: string
@@ -29,10 +30,13 @@ export type Sitemap = {
   serializer?: SerializationFunction
 
   //Advanced options
+  trailingSlash: TrailingSlashMode
   xmlAnchorAttributes: string
   urlsetAnchorAttributes: string
   sitemapindexAnchorAttributes: string
 }
+
+export type TrailingSlashMode = "auto" | "remove" | "add"
 
 export type FilteringFunction = (page: any) => boolean
 

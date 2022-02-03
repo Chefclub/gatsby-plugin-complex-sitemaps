@@ -1,4 +1,4 @@
-import { SitemapNode, SitemapSubNode } from "./types"
+import { SitemapNode, SitemapSubNode, TrailingSlashMode } from "./types"
 import fs from "fs"
 import * as path from "path"
 
@@ -32,10 +32,14 @@ export const writeXML = (xml: string, folderPath: string, filename: string) => {
 
 export const msg = (msg: string) => `gatsby-plugin-complex-sitemaps - ${msg}`
 
-export const joinURL = (baseURL: string, ...parts: string[]) => {
+export const joinURL = (
+  trailingSlashMode: TrailingSlashMode,
+  baseURL: string,
+  ...parts: string[]
+) => {
   //Remove start/end slash on parts
   parts = parts.map((part: string, index: number) =>
-    index + 1 === parts.length
+    index + 1 !== parts.length || trailingSlashMode != "auto"
       ? part.replace(/^\/*/, "").replace(/\/*$/, "")
       : part.replace(/^\/*/, "")
   )
@@ -46,7 +50,9 @@ export const joinURL = (baseURL: string, ...parts: string[]) => {
   baseURL = baseURL.replace(/\/*$/, "")
 
   //Return https://www.example.com/part1/part2/part3/
-  return `${baseURL}/${parts.join("/")}`
+  return `${baseURL}/${parts.join("/")}${
+    trailingSlashMode === "add" ? "/" : ""
+  }`
 }
 
 const encodeXML = (text: string) =>

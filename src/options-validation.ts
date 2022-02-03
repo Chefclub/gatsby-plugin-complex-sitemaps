@@ -40,6 +40,7 @@ export const pluginOptionsSchema = ({ Joi }: any) => {
   }
 
   const sitemapSchema = Joi.object({
+    writeFile: Joi.boolean().default(true),
     fileName: Joi.string()
       .pattern(/.*\.xml$/)
       .description("The sitemap file name"),
@@ -69,6 +70,16 @@ export const pluginOptionsSchema = ({ Joi }: any) => {
     sitemapindexAnchorAttributes: Joi.string()
       .default(DEFAULT_URLSET_SITEMAPINDEX_ATTRIBUTES)
       .description("Attributes to add <sitemap {here} >"),
+    trailingSlash: Joi.string()
+      .default("auto")
+      .pattern(/(auto|remove|add)$/)
+      .description(
+        `
+        remove : all trailing slash are removed
+        add : add trailing slash at the end of every urls
+        auto : existing trailing slash stays
+      `
+      ),
   })
 
   return Joi.object({
