@@ -80,6 +80,7 @@ export const pluginOptionsSchema = ({ Joi }: any) => {
         auto : existing trailing slash stays
       `
       ),
+    arbitraryNodes: Joi.array().items(Joi.object()),
   })
 
   return Joi.object({

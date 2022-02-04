@@ -24,7 +24,8 @@ export default class SitemapManager {
     this.sitemap = sitemap
     this.pluginOptions = pluginOptions
     this.reporter = reporter
-    this.nodes = []
+    this.nodes =
+      this.sitemap.arbitraryNodes?.map(node => ({ ...node, type: "url" })) ?? []
 
     //"Copy" sitemap.children to children attribute after init a new SitemapManager with it
     this.sitemap.children = this.sitemap?.children ?? []

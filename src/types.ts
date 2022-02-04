@@ -31,6 +31,7 @@ export type Sitemap = {
 
   //Advanced options
   trailingSlash: TrailingSlashMode
+  arbitraryNodes?: SitemapNode[]
   xmlAnchorAttributes: string
   urlsetAnchorAttributes: string
   sitemapindexAnchorAttributes: string
