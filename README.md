@@ -4,6 +4,8 @@ Create a sitemap tree for your Gatsby site.
 
 _NOTE: This plugin only generates output when run in `production` mode! To test your sitemap, run: `gatsby build && gatsby serve`_
 
+> ℹ️ If you already installed [`gatsby-plugin-advanced-sitemap`](https://github.com/TryGhost/gatsby-plugin-advanced-sitemap), we have a [migration guide](docs/advanced-sitemap-migration.md)
+
 ## Install
 
 `npm install gatsby-plugin-complex-sitemap-tree`
