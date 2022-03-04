@@ -16,7 +16,7 @@ _(This is a base utilisation, all options are listed after)_
 
 This plugin will allow you to create a sitemap tree to organize your urls.
 
-Let's start with a simple exemple : We have a recipe site like [ChefClub](https://chefclub.tv) which means that we have a lot of `recipes` organized in `categories` and so, in our dataLayer, we have the two corresponding collections : `allRecipes` and `allCategories`
+Let's start with a simple exemple : We have a recipe site like [Chefclub](https://chefclub.tv) which means that we have a lot of `recipes` organized in `categories` and so, in our dataLayer, we have the two corresponding collections : `allRecipes` and `allCategories`
 
 We want a sitemap tree like this :
 
