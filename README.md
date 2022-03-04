@@ -1,6 +1,6 @@
 # gatsby-plugin-complex-sitemap-tree
 
-Create a sitemap tree for your Gatsby site.
+Create a sitemap tree for your Gatsby site. Compatible **Gatsby 4**.
 
 _NOTE: This plugin only generates output when run in `production` mode! To test your sitemap, run: `gatsby build && gatsby serve`_
 
