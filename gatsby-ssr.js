@@ -1,1 +1,1 @@
-exports.onRenderBody = require("./dist/gatsby-ssr").onPostBuild
+exports.onRenderBody = require("./dist/gatsby-ssr").onRenderBody

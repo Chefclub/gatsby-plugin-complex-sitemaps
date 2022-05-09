@@ -48,6 +48,7 @@
   },
   "files": [
     "dist/**/*",
-    "gatsby-node.js"
+    "gatsby-node.js",
+    "gatsby-ssr.js"
   ]
 }
