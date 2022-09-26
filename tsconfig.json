@@ -8,6 +8,7 @@
     "esModuleInterop": true,
     "outDir": "dist",
     "jsx": "react",
-    "declaration": true
+    "declaration": true,
+    "skipLibCheck": true
   }
 }
