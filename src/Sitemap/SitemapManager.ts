@@ -159,6 +159,20 @@ export default class SitemapManager {
       edges = await Promise.all(
         edges.map(async (edge: any) => {
           const serializedNode = await serializationFunction(edge.node)
+
+          if (Array.isArray(serializedNode)) {
+            return serializedNode.map(nodeItem => {
+              return {
+                ...nodeItem,
+                loc: joinURL(
+                  this.sitemap.trailingSlash,
+                  this.pluginOptions.outputURL ?? this.pluginOptions.outputFolder,
+                  nodeItem.loc
+                ),
+                type: "url",
+              }
+            })
+          }
           return {
             ...serializedNode,
             loc: joinURL(
@@ -171,7 +185,7 @@ export default class SitemapManager {
         })
       )
 
-      this.nodes.push(...edges)
+      this.nodes.push(...edges.flat(1))
     } else {
       this.reporter.warn(
         `${this.sitemap?.fileName} => Invalid query name (${this.sitemap?.queryName}) => only children`
