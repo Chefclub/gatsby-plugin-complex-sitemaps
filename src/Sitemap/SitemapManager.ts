@@ -279,7 +279,7 @@ export default class SitemapManager {
                 }>\n${file.sitemap.join("\n")}\n</sitemapindex>`
               : "") +
             (file.url.length
-              ? `<urlset ${
+              ? `<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd http://www.w3.org/1999/xhtml http://www.w3.org/2002/08/xhtml/xhtml1-strict.xsd" xmlns:xhtml="http://www.w3.org/1999/xhtml" ${
                   this.sitemap.urlsetAnchorAttributes ?? ""
                 }>\n${file.url.join("\n")}\n</urlset>`
               : "")
