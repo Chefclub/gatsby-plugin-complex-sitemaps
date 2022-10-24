@@ -14,6 +14,7 @@ export type PluginOptions = {
 
   languages?: string[]
   defaultLanguage: string
+  filterPages: any
 }
 
 export type Sitemap = {
