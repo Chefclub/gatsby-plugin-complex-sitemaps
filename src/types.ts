@@ -47,13 +47,28 @@ export type FilteringFunction = (page: any, fileName: string) => boolean
 
 export type SerializationFunction = (page: any) => SitemapNode
 
+export type Link = {
+  hreflang: string
+  rel: string
+  href: string
+}
+
 export type SitemapNode = {
   type: "url" | "sitemap"
   loc: string
   changefreq?: string
   priority?: string
   lastmod?: string | Date
+  links?: Array<Link>
+  images?: Array<string>
   language?: string
+  [key: string]:
+    | string
+    | SitemapSubNode
+    | Date
+    | undefined
+    | Array<Link>
+    | Array<string>
 }
 
 export type SitemapSubNode = {

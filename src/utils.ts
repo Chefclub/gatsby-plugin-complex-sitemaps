@@ -1,4 +1,4 @@
-import { SitemapNode, SitemapSubNode, TrailingSlashMode } from "./types"
+import { Link, SitemapNode, SitemapSubNode, TrailingSlashMode } from "./types"
 import fs from "fs"
 import * as path from "path"
 
@@ -11,13 +11,31 @@ export const sitemapNodeToXML = (
     if (tag === "type") continue //We do not write the "type" attribute which is used in SitemapManager
     if (tag === "language") continue
     let content = ""
-    const tagValue = node[tag]
-    if (typeof tagValue === "string") {
-      content = encodeXML(tagValue as string)
+    if (tag === "links") {
+      const links = node[tag] as Link[]
+      links.forEach(link => {
+        content = `${content}<xhtml:link rel="${encodeXML(
+          link.rel
+        )}" hreflang="${encodeXML(link.hreflang)}" href="${encodeXML(
+          link.href
+        )}" />`
+      })
+      xml = `${xml}${content}`
+    } else if (tag === "images") {
+      const images = node[tag] as string[]
+      images.forEach(image => {
+        content = `${content}<image:image><image:loc>${image}</image:loc></image:image>`
+      })
+      xml = `${xml}${content}`
     } else {
-      content = sitemapNodeToXML(tagValue as SitemapSubNode)
+      const tagValue = node[tag]
+      if (typeof tagValue === "string") {
+        content = encodeXML(tagValue as string)
+      } else {
+        content = sitemapNodeToXML(tagValue as SitemapSubNode)
+      }
+      xml = `${xml}<${tag}>${content}</${tag}>`
     }
-    xml = `${xml}<${tag}>${content}</${tag}>`
   }
 
   return `${xml}`
