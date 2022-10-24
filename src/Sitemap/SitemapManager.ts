@@ -146,7 +146,9 @@ export default class SitemapManager {
         const filterFunction: FilteringFunction = this.sitemap?.filterPages
         const beforeFilteringLength = edges.length
 
-        edges = edges.filter((edge: any) => filterFunction(edge.node))
+        edges = edges.filter((edge: any) =>
+          filterFunction(edge.node, this.sitemap.fileName)
+        )
 
         this.reporter.verbose(
           `Filtering ended : ${

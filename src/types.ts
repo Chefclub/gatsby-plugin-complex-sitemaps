@@ -43,7 +43,7 @@ export type Sitemap = {
 
 export type TrailingSlashMode = "auto" | "remove" | "add"
 
-export type FilteringFunction = (page: any) => boolean
+export type FilteringFunction = (page: any, fileName: string) => boolean
 
 export type SerializationFunction = (page: any) => SitemapNode
 
