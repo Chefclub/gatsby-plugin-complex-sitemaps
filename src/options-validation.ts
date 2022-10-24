@@ -117,5 +117,7 @@ export const pluginOptionsSchema = ({ Joi }: any) => {
     xslPath: Joi.string().description(
       "Path to the xsl file used to pimp your sitemap !"
     ),
+    languages: Joi.array().items(Joi.string()),
+    defaultLanguage: Joi.string(),
   })
 }

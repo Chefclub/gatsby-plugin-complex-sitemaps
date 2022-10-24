@@ -11,6 +11,9 @@ export type PluginOptions = {
   //Run-time
   outputFolderURL?: string
   outputURL?: string
+
+  languages?: string[]
+  defaultLanguage: string
 }
 
 export type Sitemap = {
@@ -49,7 +52,7 @@ export type SitemapNode = {
   changefreq?: string
   priority?: string
   lastmod?: string | Date
-  [key: string]: string | SitemapSubNode | Date | undefined
+  language?: string
 }
 
 export type SitemapSubNode = {

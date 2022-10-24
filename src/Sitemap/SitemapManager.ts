@@ -156,22 +156,58 @@ export default class SitemapManager {
       }
 
       //We transform each edge from the query result to a SitemapNode
-      edges = await Promise.all(
-        edges.map(async (edge: any) => {
-          const serializedNode = await serializationFunction(edge.node)
+
+      const generateSitemapNode = async (
+        edge: any,
+        language?: string
+      ): Promise<SitemapNode> => {
+        const serializedNode = await serializationFunction(edge.node)
+        return {
+          ...serializedNode,
+          loc: joinURL(
+            this.sitemap.trailingSlash,
+            this.pluginOptions.outputURL ?? this.pluginOptions.outputFolder,
+            language ? `/${language}/${serializedNode.loc}` : serializedNode.loc
+          ),
+          type: "url",
+          language,
+        }
+      }
+
+      const addLinksToNode = (node: SitemapNode, extraNodes: SitemapNode[]) => {
+        node.links = extraNodes.map(extraNode => {
           return {
-            ...serializedNode,
-            loc: joinURL(
-              this.sitemap.trailingSlash,
-              this.pluginOptions.outputURL ?? this.pluginOptions.outputFolder,
-              serializedNode.loc
-            ),
-            type: "url",
+            rel: "alternate",
+            hreflang: extraNode.language ?? this.pluginOptions.defaultLanguage,
+            href: extraNode.loc,
           }
         })
-      )
+      }
 
-      this.nodes.push(...edges)
+      const sitemapNodes: SitemapNode[] = []
+
+      if (edges != null && Array.isArray(edges)) {
+        for (const edge of edges) {
+          const node = await generateSitemapNode(edge)
+          if (this.pluginOptions.languages) {
+            const extraNodes: SitemapNode[] = await Promise.all(
+              this.pluginOptions.languages.map(async language => {
+                return generateSitemapNode(edge, language)
+              })
+            )
+            addLinksToNode(node, extraNodes)
+            extraNodes.forEach(extraNode => {
+              addLinksToNode(extraNode, [node, ...extraNodes])
+            })
+
+            sitemapNodes.push(...extraNodes)
+          }
+
+          sitemapNodes.push(node)
+        }
+
+        this.nodes.push(...sitemapNodes)
+      }
     } else {
       this.reporter.warn(
         `${this.sitemap?.fileName} => Invalid query name (${this.sitemap?.queryName}) => only children`
