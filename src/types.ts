@@ -49,7 +49,7 @@ export type SitemapNode = {
   changefreq?: string
   priority?: string
   lastmod?: string | Date
-  [key: string]: string | SitemapSubNode | Date | undefined
+  [key: string]: string | SitemapSubNode | SitemapSubNode[] | Date | undefined
 }
 
 export type SitemapSubNode = {
