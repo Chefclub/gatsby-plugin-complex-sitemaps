@@ -9,14 +9,26 @@ export const sitemapNodeToXML = (
 
   for (const tag in node) {
     if (tag === "type") continue //We do not write the "type" attribute which is used in SitemapManager
-    let content = ""
     const tagValue = node[tag]
-    if (typeof tagValue === "string") {
-      content = encodeXML(tagValue as string)
+    // Add support for passing in a parameter in the root node called serializeArray which is an array of subnode abjects.
+    // This is to allow adding multiple subnodes with the same key, such as <image:image>, to the sitemap.
+    if (tag === 'serializeArray' && tagValue) {
+      (tagValue as SitemapSubNode[]).forEach((obj: SitemapSubNode) => {
+        let content = "";
+        if (typeof obj === 'object') {
+          content = sitemapNodeToXML(obj)
+          xml = `${xml}${content}`;
+        }
+      });
     } else {
-      content = sitemapNodeToXML(tagValue as SitemapSubNode)
+      let content = ""
+      if (typeof tagValue === "string") {
+        content = encodeXML(tagValue as string)
+      } else {
+        content = sitemapNodeToXML(tagValue as SitemapSubNode)
+      }
+      xml = `${xml}<${tag}>${content}</${tag}>`
     }
-    xml = `${xml}<${tag}>${content}</${tag}>`
   }
 
   return `${xml}`
